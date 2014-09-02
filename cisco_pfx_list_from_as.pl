@@ -1,5 +1,17 @@
 #! /usr/bin/perl -w
+###
+### Perl Script to generate Cisco IOS-Like Prefixes List for Filtering peering on IXP
+###
+### @ Author : Fabien VINCENT (git@beufa.net)
+### @ Last Update : 2014-09-01
+###
+### USAGE
+##       perl cisco_pfx_list_from_as.pl [AS_NUM]
 #
+### REQUIRED MODULES FROM CPAN
+##	JSON::PP
+## 	LWP::UserAgent
+## 	Net::IP
 #
 
 use strict;
@@ -121,7 +133,7 @@ my $as_holder = undef;
 my $index_pfx = 0;
 
 # Test if argument 0 (first) is integer / decimal
-if ($ARGV[0] =~ /\d+/) {
+if ($ARGV[0] =~ /^\d+$/) {
 	# If it is, then fill $as_num and launch sub procedures
 	$as_num = $ARGV[0];
 	# Get the full ordered list of announced prefixes using RIPE DB, ordered by ipv4 and ipv6 
@@ -139,24 +151,24 @@ if ($ARGV[0] =~ /\d+/) {
 	
 	# Start the output of IPv6 prefix list in Cisco IOS like mode from 10
 	print "IPv6 Prefix List for AS [$as_num]\r\n\r\n";
-	print "\t ipv6 prefix-list AS-$as_num-IN-IP6 description \"IPv6 PREFIX LIST AS $as_num : $as_holder->{'raw'}\"\r\n";
+	print "\t ipv6 prefix-list AS-$as_num-IN-IP6 description \"IPv6 PREFIX AS_$as_num ($as_holder->{'raw'})\"\r\n";
 	$index_pfx = 10;
 	foreach my $pfx ( @{ $as_pfx->{'ip6'} } ) {
-		print "\t\t ipv6 prefix-list AS-$as_num-IN-IP6 seq " . $index_pfx . " permit " . $pfx . "\r\n";
+		print "\t ipv6 prefix-list AS-$as_num-IN-IP6 seq " . $index_pfx . " permit " . $pfx . "\r\n";
 		$index_pfx++;
 	}
 
 	# Start the output of IPv4 prefix list in Cisco IOS like mode from 10
 	print "\r\n--------------------------------------------------------------------------------------------------------------\r\n";	
 	print "IPv4 Prefix List for AS [$as_num]\r\n\r\n";
-	print "\t ip prefix-list AS-$as_num-IN-IP4 description \"IPv4 PREFIX LIST AS $as_num : $as_holder->{'raw'}\"\r\n";
+	print "\t ip prefix-list AS-$as_num-IN-IP4 description \"IPv4 PREFIX AS-$as_num ($as_holder->{'raw'})\"\r\n";
 	$index_pfx = 10;
 	foreach my $pfx ( @{ $as_pfx->{'ip4'} } ) {
-		print "\t\t ip prefix-list AS-$as_num-IN-IP4 seq " . $index_pfx . " permit " . $pfx . "\r\n";
+		print "\t ip prefix-list AS-$as_num-IN-IP4 seq " . $index_pfx . " permit " . $pfx . "\r\n";
 		$index_pfx++;
 	}
 	
 	print "\r\n";
 } else {
-	die "Need AS in numeric mode only";
+	die "Need AS in numeric mode only\r\n";
 }
